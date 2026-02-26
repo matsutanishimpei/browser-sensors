@@ -78,6 +78,62 @@ const sensors = [
         }
     },
     {
+        id: 'serial',
+        title: 'Web Serial API',
+        description: 'Arduino等のマイコン・電子工作ボードとシリアル通信(COM)を行います。',
+        state: { port: null, reader: null, keepReading: true },
+        isSupported: () => navigator.serial !== undefined,
+        async start(update) {
+            try {
+                update('シリアルポートへのアクセス権限をリクエスト中...\n（マイコンボード等をUSB接続してください）');
+
+                const port = await navigator.serial.requestPort();
+                this.state.port = port;
+
+                // Typical baud rate for Arduino
+                await port.open({ baudRate: 9600 });
+                update('ポートを開きました (Baud Rate: 9600)\n\nデータ受信を待機中...');
+
+                this.state.keepReading = true;
+                while (port.readable && this.state.keepReading) {
+                    const reader = port.readable.getReader();
+                    this.state.reader = reader;
+                    try {
+                        while (true) {
+                            const { value, done } = await reader.read();
+                            if (done) break;
+                            const textDecoder = new TextDecoder();
+                            update(`【受信データ】\n${textDecoder.decode(value)}`);
+                        }
+                    } catch (error) {
+                        update(`シリアル読取エラー: ${error.message}`);
+                    } finally {
+                        reader.releaseLock();
+                    }
+                }
+
+            } catch (err) {
+                if (err.name === 'NotFoundError') {
+                    update('キャンセルされました。');
+                } else {
+                    update(`エラー: ${err.message}`);
+                }
+            }
+        },
+        async stop(update) {
+            this.state.keepReading = false;
+            if (this.state.reader) {
+                await this.state.reader.cancel();
+            }
+            if (this.state.port) {
+                await this.state.port.close();
+            }
+            this.state.port = null;
+            this.state.reader = null;
+            update('シリアル通信を停止（切断）しました。');
+        }
+    },
+    {
         id: 'nfc',
         title: 'Web NFC',
         description: 'スマホ等でNFCタグ・ICカード（Suica等）をかざして読み取ります。',
