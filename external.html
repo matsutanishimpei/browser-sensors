@@ -17,6 +17,8 @@
             <h1>External Device APIs</h1>
             <p>ブラウザから外の世界（周辺機器）と繋がる強力なWeb APIをテストできます。</p>
             <div style="margin-top: 1rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <button id="btn-help" class="btn btn-help"
+                    style="width: auto; font-size: 0.85rem; padding: 0.5rem 1rem;">使い方・よくある質問</button>
                 <a href="index.html" class="btn"
                     style="width: auto; font-size: 0.85rem; padding: 0.5rem 1rem; text-decoration: none; display: inline-block;">⬅
                     組み込みセンサーに戻る</a>
@@ -31,12 +33,32 @@
             <!-- Sensor cards will be injected here via JS -->
         </main>
 
+        <!-- Help Modal Overlay -->
+        <div id="help-modal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>よくある質問 (FAQ)</h2>
+                    <button id="btn-close-help" class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <h3>Q. Bluetoothで心当たりのないデバイスがたくさん表示される</h3>
+                    <p>A. このAPIはアンテナを全開にして周囲に飛んでいる電波をすべて拾うため、他人のワイヤレスイヤホンやスマートウォッチ、街中のIoT家電、忘れ物タグなどのBLE（Bluetooth Low
+                        Energy）電波がリストに大量に表示されることがあります。もちろんペアリング設定をしない限り接続・操作はできません。</p>
+
+                    <h3>Q. Web NFCでマイナンバーカードやSuicaをかざしても読取エラーになる</h3>
+                    <p>A. ブラウザのWeb NFC
+                        APIは、セキュリティ上の理由からシンプルにテキストが読み書きできる「NDEFフォーマット」のみに対応しています。マイナンバーカード（Type-B）やSuica（FeliCa）のような、専用コマンドで暗号通信を行う高度な規格のカードには、ブラウザからは直接アクセスできないようにOSレベルで厳格にブロックされています。
+                    </p>
+                </div>
+            </div>
+        </div>
+
         <footer>
             <p>ブラウザおよび各種デバイスAPIのテスト用に構築されています</p>
         </footer>
     </div>
 
-    <script src="./src/external.js?v=1"></script>
+    <script src="./src/external.js?v=2"></script>
 </body>
 
 </html>

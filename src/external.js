@@ -336,6 +336,28 @@ function init() {
     if (hasUnsupported) {
         document.getElementById('compatibility-alert').style.display = 'block';
     }
+
+    // Help Modal Logic
+    const btnHelp = document.getElementById('btn-help');
+    const btnCloseHelp = document.getElementById('btn-close-help');
+    const helpModal = document.getElementById('help-modal');
+
+    if (btnHelp && btnCloseHelp && helpModal) {
+        btnHelp.addEventListener('click', () => {
+            helpModal.style.display = 'flex';
+        });
+
+        btnCloseHelp.addEventListener('click', () => {
+            helpModal.style.display = 'none';
+        });
+
+        // Close on outside click
+        helpModal.addEventListener('click', (e) => {
+            if (e.target === helpModal) {
+                helpModal.style.display = 'none';
+            }
+        });
+    }
 }
 
 document.addEventListener('DOMContentLoaded', init);
