@@ -1,6 +1,7 @@
 // Main application logic
 
 const sensors = [
+  // --- 既存のセンサー類 ---
   {
     id: 'geolocation',
     title: '位置情報 (Geolocation)',
@@ -10,7 +11,7 @@ const sensors = [
     start(update) {
       update('権限をリクエスト中...');
       this.state.watchId = navigator.geolocation.watchPosition(
-        (pos) => update(`緯度: ${pos.coords.latitude.toFixed(6)}\n経度: ${pos.coords.longitude.toFixed(6)}\n精度: ${pos.coords.accuracy}m`),
+        (pos) => update(`緯度: ${pos.coords.latitude.toFixed(6)}\n経度: ${pos.coords.longitude.toFixed(6)}\n精度: ${pos.coords.accuracy}m\n高度: ${pos.coords.altitude || '不明'}m\n方角: ${pos.coords.heading || '不明'}度\n速度: ${pos.coords.speed || '不明'}m/s`),
         (err) => update(`エラー: ${err.message}`),
         { enableHighAccuracy: true, maximumAge: 0 }
       );
@@ -32,12 +33,11 @@ const sensors = [
     start(update) {
       this.state.handler = (e) => {
         if (e.alpha !== null) {
-          update(`Alpha (Z軸): ${e.alpha.toFixed(2)}\nBeta (X軸): ${e.beta.toFixed(2)}\nGamma (Y軸): ${e.gamma.toFixed(2)}`);
+          update(`Alpha (Z軸/方位): ${e.alpha.toFixed(2)}\nBeta (X軸/前後): ${e.beta.toFixed(2)}\nGamma (Y軸/左右): ${e.gamma.toFixed(2)}`);
         } else {
           update('データ待機中 (実際のデバイスが必要です)');
         }
       };
-      // For iOS 13+ support, we may need DeviceOrientationEvent.requestPermission()
       if (typeof DeviceOrientationEvent.requestPermission === 'function') {
         DeviceOrientationEvent.requestPermission()
           .then(permissionState => {
@@ -69,7 +69,12 @@ const sensors = [
         let text = '';
         if (e.accelerationIncludingGravity && e.accelerationIncludingGravity.x !== null) {
           let a = e.accelerationIncludingGravity;
-          text += `加速度 X: ${a.x.toFixed(2)}\n加速度 Y: ${a.y.toFixed(2)}\n加速度 Z: ${a.z.toFixed(2)}`;
+          let aNoG = e.acceleration || { x: 0, y: 0, z: 0 };
+          let rot = e.rotationRate || { alpha: 0, beta: 0, gamma: 0 };
+
+          text += `[重力含む加速度]\nX: ${a.x.toFixed(2)} | Y: ${a.y.toFixed(2)} | Z: ${a.z.toFixed(2)}\n`;
+          text += `[純粋な加速度]\nX: ${aNoG.x?.toFixed(2) || 0} | Y: ${aNoG.y?.toFixed(2) || 0} | Z: ${aNoG.z?.toFixed(2) || 0}\n`;
+          text += `[回転速度]\nA: ${rot.alpha?.toFixed(2) || 0} | B: ${rot.beta?.toFixed(2) || 0} | G: ${rot.gamma?.toFixed(2) || 0}`;
         } else {
           text = 'データ待機中 (実際のデバイスが必要です)';
         }
@@ -105,7 +110,10 @@ const sensors = [
     async start(update, context) {
       try {
         update('カメラをリクエスト中...');
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment' }, // 背面カメラを優先
+          audio: false
+        });
         this.state.stream = stream;
 
         const video = document.createElement('video');
@@ -116,7 +124,10 @@ const sensors = [
 
         context.mediaContainer.style.display = 'block';
         context.mediaContainer.appendChild(video);
-        update('カメラ起動中');
+
+        const track = stream.getVideoTracks()[0];
+        const settings = track.getSettings();
+        update(`カメラ起動中\n解像度: ${settings.width}x${settings.height}\nフレームレート: ${settings.frameRate}fps`);
       } catch (err) {
         update(`エラー: ${err.message}`);
       }
@@ -160,7 +171,7 @@ const sensors = [
           const sum = dataArray.reduce((acc, val) => acc + val, 0);
           const avg = (sum / dataArray.length).toFixed(2);
           update(`入力レベル: ${avg} \n音量グラフ:\n${'█'.repeat(Math.min(20, Math.floor(avg / 5)))}`);
-        }, 100);
+        }, 50);
       } catch (err) {
         update(`エラー: ${err.message}`);
       }
@@ -184,7 +195,7 @@ const sensors = [
         this.state.manager = battery;
 
         const updateBattery = () => {
-          update(`残量: ${(battery.level * 100).toFixed(0)}% | 充電中: ${battery.charging ? 'はい' : 'いいえ'}\n残り時間: ${battery.dischargingTime === Infinity ? '不明' : battery.dischargingTime + '秒'}`);
+          update(`残量: ${(battery.level * 100).toFixed(0)}%\n充電中: ${battery.charging ? 'はい (⚡)' : 'いいえ'}\n充電完了まで: ${battery.chargingTime === Infinity ? '不明/満充電' : battery.chargingTime + '秒'}\n放電完了まで: ${battery.dischargingTime === Infinity ? '不明/充電中' : battery.dischargingTime + '秒'}`);
         };
         this.state.handler = updateBattery;
 
@@ -213,7 +224,7 @@ const sensors = [
       const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
 
       this.state.handler = () => {
-        update(`回線種別: ${conn.effectiveType || '不明'}\n下り速度: ${conn.downlink || '不明'} Mbps\n応答速度(RTT): ${conn.rtt || '不明'} ms\nデータセーバー: ${conn.saveData ? 'オン' : 'オフ'}`);
+        update(`回線種別: ${conn.effectiveType || '不明'}\n推定下り速度: ${conn.downlink || '不明'} Mbps\n応答速度(RTT): ${conn.rtt || '不明'} ms\nデータセーバー: ${conn.saveData ? 'オン' : 'オフ'}`);
       };
 
       conn.addEventListener('change', this.state.handler);
@@ -233,7 +244,7 @@ const sensors = [
     isSupported: () => window.PointerEvent !== undefined,
     start(update) {
       this.state.handler = (e) => {
-        update(`X座標: ${e.clientX} px\nY座標: ${e.clientY} px\n筆圧: ${e.pressure || 0}\n種類: ${e.pointerType}`);
+        update(`タップ/マウスポインタ追跡中\nX座標: ${e.clientX} px\nY座標: ${e.clientY} px\n筆圧 (Pressure): ${e.pressure || 0}\nポインタ種類: ${e.pointerType}`);
       };
       window.addEventListener('pointermove', this.state.handler);
       update('画面上で指やマウスを動かしてください...');
@@ -260,6 +271,164 @@ const sensors = [
     stop(update) {
       if (this.state.interval) clearInterval(this.state.interval);
       navigator.vibrate(0);
+      update('停止しました');
+    }
+  },
+
+  // --- 追加した機能 (Hardware & Screen APIなど) ---
+  {
+    id: 'hardware',
+    title: 'ハードウェア情報 (デバイス情報)',
+    description: 'CPUコア数、推定メモリ容量、ブラウザ情報。',
+    state: { interval: null },
+    isSupported: () => true, // これは大体どこでもサポートされている
+    start(update) {
+      const cores = navigator.hardwareConcurrency || '取得不可';
+      const memory = navigator.deviceMemory || '取得不可 (iOS等では非対応)';
+      const platform = navigator.platform || '不明';
+      const userAgent = navigator.userAgent;
+      const language = navigator.language;
+      const t = `CPU論理コア数: ${cores}\n推定RAM: 約 ${memory} GB\nプラットフォーム: ${platform}\n言語: ${language}\nUA: ${userAgent}`;
+      update(t);
+    },
+    stop(update) {
+      update('停止しました');
+    }
+  },
+  {
+    id: 'screen',
+    title: '画面・ウィンドウ情報',
+    description: '解像度、色深度、デバイスピクセル比など。',
+    state: { handler: null },
+    isSupported: () => window.screen !== undefined,
+    start(update) {
+      this.state.handler = () => {
+        update(`画面解像度: ${window.screen.width} x ${window.screen.height}\n表示可能領域: ${window.screen.availWidth} x ${window.screen.availHeight}\n現在のウィンドウ: ${window.innerWidth} x ${window.innerHeight}\nピクセル比 (DPR): ${window.devicePixelRatio}\n色深度: ${window.screen.colorDepth} bit`);
+      };
+      window.addEventListener('resize', this.state.handler);
+      this.state.handler();
+    },
+    stop(update) {
+      if (this.state.handler) window.removeEventListener('resize', this.state.handler);
+      update('停止しました');
+    }
+  },
+  {
+    id: 'wakelock',
+    title: 'スリープ防止 (Screen Wake Lock)',
+    description: '画面が自動で暗くなる(スリープする)のを防ぎます。',
+    state: { lock: null },
+    isSupported: () => 'wakeLock' in navigator,
+    async start(update) {
+      try {
+        this.state.lock = await navigator.wakeLock.request('screen');
+        update('有効：画面が自動でスリープしなくなりました。\n※タブを切り替えると自動で無効になります。');
+
+        this.state.lock.addEventListener('release', () => {
+          update('解除：スリープ防止が無効になりました。');
+        });
+      } catch (err) {
+        update(`エラー (バッテリー低下などの理由): ${err.message}`);
+      }
+    },
+    stop(update) {
+      if (this.state.lock !== null) {
+        this.state.lock.release();
+        this.state.lock = null;
+      }
+      update('停止しました');
+    }
+  },
+  {
+    id: 'speech',
+    title: '音声認識 (Speech Recognition)',
+    description: 'マイクから喋った言葉をテキストに変換します。',
+    state: { recognition: null, text: '' },
+    isSupported: () => 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window,
+    start(update) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      this.state.recognition = new SpeechRecognition();
+      this.state.recognition.lang = 'ja-JP';
+      this.state.recognition.continuous = true; // 連続認識
+      this.state.recognition.interimResults = true; // 途中経過も取得
+
+      this.state.text = '';
+      update('「何か喋ってみてください...」');
+
+      this.state.recognition.onresult = (event) => {
+        let interimTranscript = '';
+        let finalTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          } else {
+            interimTranscript += event.results[i][0].transcript;
+          }
+        }
+
+        if (finalTranscript) {
+          this.state.text += finalTranscript + '\n';
+        }
+
+        update(`確定テキスト:\n${this.state.text}\n\n認識中:\n${interimTranscript}`);
+      };
+
+      this.state.recognition.onerror = (event) => {
+        update(`エラー: ${event.error}`);
+      };
+
+      this.state.recognition.start();
+    },
+    stop(update) {
+      if (this.state.recognition) {
+        this.state.recognition.stop();
+        this.state.recognition = null;
+      }
+      update('停止しました');
+    }
+  },
+  {
+    id: 'screenshare',
+    title: '画面共有 (Screen Capture)',
+    description: '自分のPC/スマホの画面をキャプチャします。',
+    state: { stream: null, videoEl: null },
+    isSupported: () => !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia),
+    async start(update, context) {
+      try {
+        update('キャプチャする画面をリクエスト中...');
+        const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+        this.state.stream = stream;
+
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        video.autoplay = true;
+        video.playsInline = true;
+        this.state.videoEl = video;
+
+        context.mediaContainer.style.display = 'block';
+        context.mediaContainer.appendChild(video);
+
+        const track = stream.getVideoTracks()[0];
+        update(`画面共有中\n共有元: ${track.label}`);
+
+        track.onended = () => {
+          this.stop(update, context);
+        };
+      } catch (err) {
+        update(`エラー: キャンセルされたか非対応です。\n(${err.message})`);
+      }
+    },
+    stop(update, context) {
+      if (this.state.stream) {
+        this.state.stream.getTracks().forEach(track => track.stop());
+        this.state.stream = null;
+      }
+      if (this.state.videoEl) {
+        this.state.videoEl.remove();
+        this.state.videoEl = null;
+      }
+      context.mediaContainer.style.display = 'none';
       update('停止しました');
     }
   }
@@ -301,7 +470,7 @@ function init() {
     const pre = document.createElement('pre');
     pre.id = `content-${sensor.id}`;
     pre.innerText = supported ? '準備完了' : 'このブラウザではサポートされていないか、\nHTTPS接続が必要です。';
-    if (!supported) pre.style.color = '#ff99aa';
+    if (!supported) pre.style.color = '#ff99aa'; // text color error
 
     content.appendChild(pre);
 
