@@ -4,21 +4,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Browser Sensor Lab</title>
+  <title>ブラウザ センサーラボ</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./src/style.css">
+  <link rel="stylesheet" href="./src/style.css?v=2">
 </head>
 
 <body>
   <div id="app">
     <header>
       <h1>Browser Sensor Lab</h1>
-      <p>Explore your browser's capabilities and available device APIs.</p>
+      <p>ブラウザやデバイスが持つAPI機能（センサー類）をテストできます。</p>
       <div id="compatibility-alert"
         style="display: none; background: rgba(255,51,102,0.1); border: 1px solid var(--error); padding: 1rem; border-radius: 8px; margin-top: 1.5rem; color: #ff99aa;">
-        Some features require HTTPS or are not supported in your current browser.
+        一部の機能は、このブラウザでサポートされていないか、HTTPS環境でのみ動作します。
       </div>
     </header>
 
@@ -27,11 +27,11 @@
     </main>
 
     <footer>
-      <p>Built for testing browser and device APIs</p>
+      <p>ブラウザおよび各種デバイスAPIのテスト用に構築されています</p>
     </footer>
   </div>
 
-  <script src="./src/main.js"></script>
+  <script src="./src/main.js?v=2"></script>
 </body>
 
 </html>
