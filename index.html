@@ -16,8 +16,13 @@
     <header>
       <h1>Browser Sensor Lab</h1>
       <p>ブラウザやデバイスが持つAPI機能（センサー類）をテストできます。</p>
-      <button id="btn-help" class="btn btn-help"
-        style="margin-top: 1rem; width: auto; font-size: 0.85rem; padding: 0.5rem 1rem;">使い方・よくある質問</button>
+      <div style="margin-top: 1rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <button id="btn-help" class="btn btn-help"
+          style="width: auto; font-size: 0.85rem; padding: 0.5rem 1rem;">使い方・よくある質問</button>
+        <a href="external.html" class="btn"
+          style="width: auto; font-size: 0.85rem; padding: 0.5rem 1rem; text-decoration: none; display: inline-block; background: rgba(0,240,255,0.1); border-color: rgba(0,240,255,0.3); color: var(--primary);">外部デバイスAPIを試す
+          ➔</a>
+      </div>
       <div id="compatibility-alert"
         style="display: none; background: rgba(255,51,102,0.1); border: 1px solid var(--error); padding: 1rem; border-radius: 8px; margin-top: 1.5rem; color: #ff99aa;">
         一部の機能は、このブラウザでサポートされていないか、HTTPS環境でのみ動作します。

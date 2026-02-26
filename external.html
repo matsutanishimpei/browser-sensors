@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>外部デバイスAPI - センサーラボ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./src/style.css?v=3">
+</head>
+
+<body>
+    <div id="app">
+        <header>
+            <h1>External Device APIs</h1>
+            <p>ブラウザから外の世界（周辺機器）と繋がる強力なWeb APIをテストできます。</p>
+            <div style="margin-top: 1rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <a href="index.html" class="btn"
+                    style="width: auto; font-size: 0.85rem; padding: 0.5rem 1rem; text-decoration: none; display: inline-block;">⬅
+                    組み込みセンサーに戻る</a>
+            </div>
+            <div id="compatibility-alert"
+                style="display: none; background: rgba(255,51,102,0.1); border: 1px solid var(--error); padding: 1rem; border-radius: 8px; margin-top: 1.5rem; color: #ff99aa;">
+                一部の機能は、このブラウザでサポートされていないか、HTTPS環境でのみ動作します。
+            </div>
+        </header>
+
+        <main class="grid-container" id="sensor-container">
+            <!-- Sensor cards will be injected here via JS -->
+        </main>
+
+        <footer>
+            <p>ブラウザおよび各種デバイスAPIのテスト用に構築されています</p>
+        </footer>
+    </div>
+
+    <script src="./src/external.js?v=1"></script>
+</body>
+
+</html>
