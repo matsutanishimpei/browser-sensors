@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./src/style.css?v=2">
+  <link rel="stylesheet" href="./src/style.css?v=3">
 </head>
 
 <body>
@@ -16,6 +16,8 @@
     <header>
       <h1>Browser Sensor Lab</h1>
       <p>ブラウザやデバイスが持つAPI機能（センサー類）をテストできます。</p>
+      <button id="btn-help" class="btn btn-help"
+        style="margin-top: 1rem; width: auto; font-size: 0.85rem; padding: 0.5rem 1rem;">使い方・よくある質問</button>
       <div id="compatibility-alert"
         style="display: none; background: rgba(255,51,102,0.1); border: 1px solid var(--error); padding: 1rem; border-radius: 8px; margin-top: 1.5rem; color: #ff99aa;">
         一部の機能は、このブラウザでサポートされていないか、HTTPS環境でのみ動作します。
@@ -26,12 +28,37 @@
       <!-- Sensor cards will be injected here via JS -->
     </main>
 
+    <!-- Help Modal Overlay -->
+    <div id="help-modal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>よくある質問 (FAQ)</h2>
+          <button id="btn-close-help" class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <h3>Q. 位置情報の「方角」や「速度」が「不明」になる</h3>
+          <p>A. これらはGPSの移動履歴から算出されるため、**立ち止まっている状態（部屋の中など）では計算不能（null）**となります。外で歩いたり乗り物に乗って移動しながらテストすると数値が表示されます。</p>
+
+          <h3>Q. スマホで「画面共有」が「非対応」になる</h3>
+          <p>A. iOS (Safari) や Android (Chrome)
+            などのモバイルブラウザでは、セキュリティ上の理由から**ウェブサイトがスマホ全体の画面を録画・共有する機能をOSレベルでブロック**しています。PCのブラウザから開くとテスト可能です。</p>
+
+          <h3>Q. 「ネットワーク情報」の速度がリアルタイムに変わらない</h3>
+          <p>A. このアプリでは実際にデータをダウンロードして速度を測るパケットテストは行っていません。OSがブラウザに「今繋がっている回線の大まかな種別（4G, 5G,
+            Wi-Fi等）」を自己申告するAPIを利用しているため、緩やかにしか更新されません。</p>
+
+          <h3>Q. 取得したデータはどこかに送信されますか？</h3>
+          <p>A. **一切送信されません**。このアプリは完全にあなたのブラウザ内（フロントエンド）のみで動作しており、カメラ映像や位置情報データ等を外部のサーバー等に保存する機能はありません。</p>
+        </div>
+      </div>
+    </div>
+
     <footer>
       <p>ブラウザおよび各種デバイスAPIのテスト用に構築されています</p>
     </footer>
   </div>
 
-  <script src="./src/main.js?v=2"></script>
+  <script src="./src/main.js?v=3"></script>
 </body>
 
 </html>
